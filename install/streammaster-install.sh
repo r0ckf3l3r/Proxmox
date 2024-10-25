@@ -37,7 +37,7 @@ get_latest_release() {
 }
 
 DOCKER_LATEST_VERSION=$(get_latest_release "moby/moby")
-CORE_LATEST_VERSION=$(get_latest_release "home-assistant/core")
+STREAMMASTER_LATEST_VERSION=$(get_latest_release "senexcrenshaw/streammaster")
 PORTAINER_LATEST_VERSION=$(get_latest_release "portainer/portainer")
 
 msg_info "Installing Docker $DOCKER_LATEST_VERSION"
@@ -63,24 +63,27 @@ $STD docker run -d \
   portainer/portainer-ce:latest
 msg_ok "Installed Portainer $PORTAINER_LATEST_VERSION"
 
-msg_info "Pulling Home Assistant $CORE_LATEST_VERSION Image"
-$STD docker pull ghcr.io/home-assistant/home-assistant:stable
-msg_ok "Pulled Home Assistant $CORE_LATEST_VERSION Image"
+msg_info "Pulling StreamMaster $STREAMMASTER_LATEST_VERSION Image"
+$STD docker pull senexcrenshaw/streammaster:latest
+msg_ok "Pulled StreamMaster $STREAMMASTER_LATEST_VERSION Image"
 
-msg_info "Installing Home Assistant $CORE_LATEST_VERSION"
-$STD docker volume create hass_config
+msg_info "Installing StreamMaster $STREAMMASTER_LATEST_VERSION"
+$STD docker volume create streammaster_config
 $STD docker run -d \
-  --name homeassistant \
+  --name streammaster \
+  -p 7095:7095 \
+  -p 7096:7096 \
   --privileged \
   --restart unless-stopped \
   -v /var/run/docker.sock:/var/run/docker.sock \
   -v /dev:/dev \
-  -v hass_config:/config \
+  -v streammaster_config:/config \
   -v /etc/localtime:/etc/localtime:ro \
   --net=host \
-  ghcr.io/home-assistant/home-assistant:stable
-mkdir /root/hass_config
-msg_ok "Installed Home Assistant $CORE_LATEST_VERSION"
+  senexcrenshaw/streammaster:latest
+mkdir -p /root/streammaster_config/tv-logos
+cd /root/streammaster_config/tv-logos && git clone https://github.com/tv-logo/tv-logos.git .
+msg_ok "Installed Home StreamMaster $STREAMMASTER_LATEST_VERSION"
 
 motd_ssh
 customize
